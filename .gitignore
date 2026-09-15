@@ -1,8 +1,26 @@
 .env
+.env.*
 .venv/
+venv/
 __pycache__/
-*.pyc
-.ipynb_checkpoints/
+*.py[codz]
+*.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+.streamlit/secrets.toml
+
+# Local dataset files can be large and may contain generated artifacts.
 data/kaggle/*
 data/raw/*
 data/processed/*
+
+# Keep directory placeholders versioned when present.
+!data/kaggle/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
