@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nba_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nba_analytics}
+      POSTGRES_USER: ${POSTGRES_USER:-nba_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nba_password}
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nba_user} -d ${POSTGRES_DB:-nba_analytics}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  nba_app:
+    build:
+      context: .
+    container_name: nba_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      KAGGLE_API_TOKEN: ${KAGGLE_API_TOKEN:-}
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./notebooks:/app/notebooks
+      - ./src:/app/src
+      - ./sql:/app/sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

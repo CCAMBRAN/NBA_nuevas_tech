@@ -1,0 +1,9 @@
+.git
+.venv
+__pycache__
+*.pyc
+.env
+notebooks/.ipynb_checkpoints
+data/raw/*
+data/processed/*
+data/kaggle/*
