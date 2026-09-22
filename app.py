@@ -2,6 +2,7 @@ from pathlib import Path
 import sys
 
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 from sqlalchemy import text
 
@@ -67,12 +68,64 @@ try:
     st.subheader("Team performance")
     st.dataframe(team_summary, use_container_width=True, hide_index=True)
 
+    st.caption("Scoring volume vs. net efficiency — bubble size is games played, color is win %")
+    efficiency_fig = px.scatter(
+        team_summary,
+        x="average_points_scored",
+        y="average_point_differential",
+        size="games_played",
+        color="win_percentage",
+        color_continuous_scale=["#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95"],
+        size_max=22,
+        hover_name="team_name",
+        custom_data=["team_abbreviation", "wins", "losses"],
+        labels={
+            "average_points_scored": "Average points scored",
+            "average_point_differential": "Average point differential",
+        },
+    )
+    efficiency_fig.update_traces(
+        marker=dict(sizemin=8, line=dict(width=1, color="rgba(137,135,129,0.6)")),
+        hovertemplate=(
+            "<b>%{hovertext} (%{customdata[0]})</b><br>"
+            "Record %{customdata[1]}-%{customdata[2]}<br>"
+            "Win pct %{marker.color:.1%}<br>"
+            "Avg points scored %{x:.1f}<br>"
+            "Avg point differential %{y:+.1f}"
+            "<extra></extra>"
+        ),
+    )
+    efficiency_fig.add_hline(y=0, line_width=1, line_color="rgba(137,135,129,0.6)")
+    top_team = team_summary.loc[team_summary["win_percentage"].idxmax()]
+    efficiency_fig.add_annotation(
+        x=top_team["average_points_scored"],
+        y=top_team["average_point_differential"],
+        text=top_team["team_abbreviation"],
+        showarrow=True,
+        arrowhead=0,
+        arrowcolor="#898781",
+        ax=20,
+        ay=-20,
+        font=dict(color="#898781"),
+    )
+    efficiency_fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#898781"),
+        coloraxis_colorbar=dict(title="Win %", tickformat=".0%"),
+        margin=dict(l=10, r=10, t=10, b=10),
+        height=450,
+    )
+    efficiency_fig.update_xaxes(gridcolor="rgba(137,135,129,0.3)", zeroline=False)
+    efficiency_fig.update_yaxes(gridcolor="rgba(137,135,129,0.3)", zeroline=False)
+    st.plotly_chart(efficiency_fig, use_container_width=True)
+
     scoring = load_view(
         """
         SELECT season_id, average_home_points, average_away_points,
                average_combined_points
         FROM analytics.scoring_trends
-        ORDER BY season_id
+        ORDER BY season_start
         """
     )
     st.subheader("Scoring trends")

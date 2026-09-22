@@ -17,7 +17,7 @@ SELECT
     point_differential,
     home_points + away_points AS combined_points
 FROM harmonized.games
-WHERE home_team_id IS NOT NULL
+WHERE home_team_id IS NOT NULL AND season_type = 'Regular Season'
 UNION ALL
 SELECT
     game_id,
@@ -37,7 +37,7 @@ SELECT
     -point_differential,
     home_points + away_points
 FROM harmonized.games
-WHERE away_team_id IS NOT NULL;
+WHERE away_team_id IS NOT NULL AND season_type = 'Regular Season';
 
 CREATE OR REPLACE VIEW analytics.team_season_summary AS
 SELECT
@@ -90,8 +90,10 @@ SELECT
     ROUND(AVG(away_points), 2) AS average_away_points,
     ROUND(AVG(home_points + away_points), 2) AS average_combined_points,
     MAX(home_points + away_points) AS highest_combined_points,
-    MIN(home_points + away_points) AS lowest_combined_points
+    MIN(home_points + away_points) AS lowest_combined_points,
+    MIN(game_date) AS season_start
 FROM harmonized.games
+WHERE season_type = 'Regular Season'
 GROUP BY season_id;
 
 CREATE OR REPLACE VIEW analytics.highest_scoring_games AS
