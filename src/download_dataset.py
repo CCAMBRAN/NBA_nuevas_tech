@@ -2,7 +2,6 @@ from pathlib import Path
 
 import kagglehub
 
-
 DATASET_HANDLE = "wyattowalsh/basketball"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = PROJECT_ROOT / "data" / "kaggle" / ".cache"
